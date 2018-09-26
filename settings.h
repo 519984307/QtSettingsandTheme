@@ -10,8 +10,6 @@
 #include <QDesktopWidget>
 #include <QToolTip>
 
-using namespace std;
-
 class Settings
 {
 public:
