@@ -15,7 +15,7 @@ And you can read settings with **Settings::readSettings(QString group, QString k
 
 You can write settings with **Settings::writeSettings(QString group, QString key, T option);** fuction. This function creates settings.ini file and writes group, key and its value (T type option). 
 
-> ## Example settings.ini file 
+## Example settings.ini file 
 >
 > **[Group]**
 >
