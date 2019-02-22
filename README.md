@@ -18,6 +18,7 @@ You can write settings with **Settings::writeSettings(QString group, QString key
 > ## Example settings.ini file 
 >
 > **[Group]**
+>
 > **Key**=*value*
 
 ## Fusion Dark theme screenshots:
