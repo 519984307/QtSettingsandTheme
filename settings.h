@@ -22,7 +22,7 @@ public:
     {
         int theme;
         QSettings s("settings.ini",QSettings::IniFormat);  // ayarlar registryde saklanmasi icin -> QSettings s("m231",QApplication::applicationName());
-        s.beginGroup("Settings");
+        s.beginGroup("Style");
         theme=s.value("Theme",vista).toInt(); //default theme is standard system theme
         s.endGroup();
         return theme;
@@ -31,7 +31,7 @@ public:
     static void setTheme(int theme)
     {
         QSettings s("settings.ini",QSettings::IniFormat);  // ayarlar registryde saklanmasi icin -> QSettings s("m231",QApplication::applicationName());
-        s.beginGroup("Settings");
+        s.beginGroup("Style");
         s.setValue("Theme",theme);
         s.endGroup();
 
@@ -89,19 +89,19 @@ public:
     }
 
     template <class T>
-    static void writeSettings(QString key, T option)
+    static void writeSettings(QString group, QString key, T option)
     {
         QSettings s("settings.ini",QSettings::IniFormat);  // ayarlar registryde saklanmasi icin -> QSettings s("m231",QApplication::applicationName());
-        s.beginGroup("Settings");
+        s.beginGroup(group);
         s.setValue(key, option);
         s.endGroup();
     }
 
-    static QVariant readSettings(QString key)
+    static QVariant readSettings(QString group, QString key)
     {
         QVariant val;
         QSettings s("settings.ini",QSettings::IniFormat);  // ayarlar registryde saklanmasi icin -> QSettings s("m231",QApplication::applicationName());
-        s.beginGroup("Settings");
+        s.beginGroup(group);
         val=s.value(key);
         s.endGroup();
         return val;
