@@ -1,6 +1,7 @@
 /*This class can r/w settings, set themes*/
 /************created by m231**************/
 /**************m231@tnctr.com*************/
+//https://github.com/cheytacllc/QtSettingsandTheme
 #ifndef SETTINGS_H
 #define SETTINGS_H
 #include <QApplication>
