@@ -2,7 +2,7 @@
 Qt read write create settings and set windows, classic, fusion and dark themes
 
 ## How to use?
-You include header file named "settings.hpp" into your qt project then you have to create **Settings** object for how settings are stored in computer.``Settings* yourobj = new Settings(Settings::regformat, "yourappname")`` is example for store setting in registry under **"yourappname"** key. Other option is **Settings::iniformat** that stores the settings in "yourappname" file. Change themes simply type ``your_obj->setTheme(Settings::darkFusion);`` for Fusion Dark theme. Other theme choices in the table.
+You include header file named "settings.hpp" into your qt project then you have to create **Settings** object for how settings are stored in computer.``Settings* your_obj = new Settings(Settings::regformat, "yourappname")`` is example for store setting in registry under **"yourappname"** key. Other option is **Settings::iniformat** that stores the settings in "yourappname" file. Change themes simply type ``your_obj->setTheme(Settings::darkFusion);`` for Fusion Dark theme. Other theme choices in the table.
 
 | Theme | Enum value | 
 |---|---|
