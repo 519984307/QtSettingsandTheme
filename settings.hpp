@@ -32,10 +32,9 @@ class AutoPalette;
 class Settings : private QObject {
     Q_OBJECT
 
-
+    enum class Palette { dark, light };
 public:
-    enum class Palette { light, dark };
-    enum class Theme { vista, classic, lightFusion, darkFusion };
+    enum class Theme { autoFusion, vista, classic, lightFusion, darkFusion };
     enum class Format { regFormat, iniFormat };
 
     static void init(Format format, const QString &name);
@@ -58,10 +57,16 @@ public:
         m_instance->m_settingsObj->endGroup();
     }
 
+    template <typename T>
+    static void writeStyle(const T &option){
+        m_instance->m_settingsObj->beginGroup("Style");
+        m_instance->m_settingsObj->setValue("Theme", static_cast<int>(option));
+        m_instance->m_settingsObj->endGroup();
+    }
+
     static Theme loadStyle();
     static void setStyle(const Theme val);
     static QVariant readSettings(const QString group, const QString key);
-    static void setAutoPalette(bool autoPalette);
 
 private:
     static Settings *m_instance;
@@ -73,6 +78,7 @@ private:
     Settings() = delete;
     // Construct a Settings object
     Settings(Format format, const QString &name);
+    static void setAutoPalette(bool autoPalette);
     static void changePalette(Palette _palette);
     static void callbackForSignal(bool b, Settings &s);
     static void connectionCallback(Settings &s);

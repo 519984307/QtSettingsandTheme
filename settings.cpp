@@ -53,20 +53,28 @@ Settings::Theme Settings::loadStyle() {
 */
 void Settings::setStyle(const Settings::Theme val) {
     switch (val) {
+    case Theme::autoFusion:
+        qApp->setStyle(QStyleFactory::create("Fusion"));
+        setAutoPalette(true);
+        break;
     case Theme::vista:
         qApp->setStyle(QStyleFactory::create("windowsvista"));
+        setAutoPalette(false);
         changePalette(Palette::light);
         break;
     case Theme::classic:
         qApp->setStyle(QStyleFactory::create("windows"));
+        setAutoPalette(false);
         changePalette(Palette::light);
         break;
     case Theme::lightFusion:
         qApp->setStyle(QStyleFactory::create("Fusion"));
+        setAutoPalette(false);
         changePalette(Palette::light);
         break;
     case Theme::darkFusion:
         qApp->setStyle(QStyleFactory::create("Fusion"));
+        setAutoPalette(false);
         changePalette(Palette::dark);
         break;
     default:
@@ -105,6 +113,8 @@ Settings::Settings(Settings::Format format, const QString &name) {
 void Settings::changePalette(Palette _palette) {
     static QPalette Palette;
     if (static_cast<bool>(_palette)) {
+        Palette = qApp->style()->standardPalette();
+    } else{
         Palette.setColor(QPalette::Window, QColor(53, 53, 53));
         Palette.setColor(QPalette::WindowText, Qt::white);
         Palette.setColor(QPalette::Base, QColor(25, 25, 25));
@@ -129,8 +139,8 @@ void Settings::changePalette(Palette _palette) {
         Palette.setColor(QPalette::Disabled, QPalette::Window, QColor(68, 68, 68));
         Palette.setColor(QPalette::Disabled, QPalette::Highlight,
                          QColor(68, 68, 68));
-    } else
-        Palette = qApp->style()->standardPalette();
+    }
+
     QToolTip::setPalette(Palette);
     qApp->setPalette(Palette);
 }
@@ -142,7 +152,7 @@ void Settings::callbackForSignal(bool b, Settings& s)
 
 void Settings::connectionCallback(Settings &s)
 {
-    connect(&s,SIGNAL(autoPaletteSignal(bool)), mAutoPalette, SLOT(isLightEventLoop(bool)));
+    connect(&s,SIGNAL(autoPaletteSignal(bool)), mAutoPalette, SLOT(isLightEventLoop(bool)), Qt::QueuedConnection);
 }
 
 void Settings::bool2PaletteHelper(bool b)
@@ -217,19 +227,19 @@ void AutoPalette::isLightEvent(bool &value)
 void AutoPalette::isLightEventLoop(const bool &event)
 {
     if(mThread){
-        mThread->quit();
+        if(mThread->isRunning())
+            mThread->terminate();
+        delete mThread;
     }
-    else {
-        mThread=QThread::create([&]{
-            auto islight = static_cast<bool>(readIsLight(hSubKey,valueName));
-            emit notifyPalette(!islight);
-            auto temp=islight;
-            while (event) {
-                temp=islight;
-                isLightEvent(islight);
-                if(temp!=islight) emit notifyPalette(!islight);
-            };
-        });
-    }
-    event ? mThread->start() : mThread->quit();
+    mThread=QThread::create([&]{
+        auto islight = static_cast<bool>(readIsLight(hSubKey,valueName));
+        emit notifyPalette(islight);
+        auto temp=islight;
+        while (event) {
+            temp=islight;
+            isLightEvent(islight);
+            if(temp!=islight) emit notifyPalette(islight);
+        };
+    });
+    event ? mThread->start() : mThread->terminate();
 }
