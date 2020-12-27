@@ -1,28 +1,19 @@
 /*****************************************************************************
  * settings.hpp
  *
- * Created: 8/4/2020 2020 by mguludag
+ * Created: 12/20/2020 2020 by mguludag
  *
  * Copyright 2020 mguludag. All rights reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining
- * a copy of this software and associated documentation files (the
- * "Software"), to deal in the Software without restriction, including
- * without limitation the rights to use, copy, modify, merge, publish,
- * distribute, sublicense, and/or sell copies of the Software, and to
- * permit persons to whom the Software is furnished to do so, subject to
- * the following conditions:
+ * This file may be distributed under the terms of GNU Public License version
+ * 3 (GPL v3) as defined by the Free Software Foundation (FSF). A copy of the
+ * license should have been included with this file, or the project in which
+ * this file belongs to. You may also find the details of GPL v3 at:
+ * http://www.gnu.org/licenses/gpl-3.0.txt
  *
- * The above copyright notice and this permission notice shall be
- * included in all copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
- * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
- * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * If you have any questions regarding the use of this file, feel free to
+ * contact the author of this file, or the owner of the project in which
+ * this file belongs to.
  *****************************************************************************/
 #ifndef SETTINGS_HPP
 #define SETTINGS_HPP
@@ -33,124 +24,90 @@
 #include <QStyle>
 #include <QStyleFactory>
 #include <QToolTip>
+#include <QThread>
+#include <QObject>
 
-class Settings
-{
-    QSettings *m_settingsObj = nullptr;
+class AutoPalette;
+
+class Settings : private QObject {
+    Q_OBJECT
+
 
 public:
-    enum Palette { light, dark };
-    enum Theme { vista, classic, lightFusion, darkFusion };
-    enum Format { regFormat, iniFormat };
+    enum class Palette { light, dark };
+    enum class Theme { vista, classic, lightFusion, darkFusion };
+    enum class Format { regFormat, iniFormat };
 
-    //Construct a Settings object
-    Settings(bool format, const QString name)
-    {
-        (format) ? m_settingsObj = new QSettings(name, QSettings::IniFormat)
-                 : m_settingsObj = new QSettings(name, QApplication::applicationName());
+    static void init(Format format, const QString &name);
+
+    ~Settings() {
+        delete m_instance;
+        delete m_settingsObj;
     }
 
-    ~Settings() { delete m_settingsObj; }
-
-    /*!
-    \fn int loadStyle
-    \brief Loads current application style from settings file or registry
-    */
-    int loadStyle()
-    {
-        int val;
-        m_settingsObj->beginGroup("Style");
-        val = m_settingsObj->value("Theme", lightFusion).toInt(); //default theme is lightFusion
-        m_settingsObj->endGroup();
-        return val;
-    }
-
-    /*!
-    \fn void setStyle
-    \brief Apply a given style to application
-    */
-    void setStyle(const int val)
-    {
-        switch (val) {
-        case vista:
-            qApp->setStyle(QStyleFactory::create("windowsvista"));
-            changePalette(Settings::light);
-            break;
-        case classic:
-            qApp->setStyle(QStyleFactory::create("windows"));
-            changePalette(Settings::light);
-            break;
-        case lightFusion:
-            qApp->setStyle(QStyleFactory::create("Fusion"));
-            changePalette(Settings::light);
-            break;
-        case darkFusion:
-            qApp->setStyle(QStyleFactory::create("Fusion"));
-            changePalette(Settings::dark);
-            break;
-        default:
-            break;
-        }
-    }
-
-    /*!
-    \fn QVariant readSettings
-    \brief Read a value stored in settings given group and key
-    */
-    QVariant readSettings(const QString group, const QString key)
-    {
-        QVariant val;
-        m_settingsObj->beginGroup(group);
-        val = m_settingsObj->value(key);
-        m_settingsObj->endGroup();
-        return val;
-    }
-
-    template<class T>
+    template <typename T>
     /*!
     \fn void writeSettings
     \brief Write a value in settings given group and key
     */
-    void writeSettings(const QString group, const QString key, const T option)
+    static void writeSettings(const QString group, const QString key,
+                              const T &option)
     {
-        m_settingsObj->beginGroup(group);
-        m_settingsObj->setValue(key, option);
-        m_settingsObj->endGroup();
+        m_instance->m_settingsObj->beginGroup(group);
+        m_instance->m_settingsObj->setValue(key, option);
+        m_instance->m_settingsObj->endGroup();
     }
 
-    /*!
-    \fn void changePalette
-    \brief Change the color palette between light or dark
-    */
-    void changePalette(bool _palette)
-    {
-        QPalette Palette;
-        if (_palette) {
-            Palette.setColor(QPalette::Window, QColor(53, 53, 53));
-            Palette.setColor(QPalette::WindowText, Qt::white);
-            Palette.setColor(QPalette::Base, QColor(25, 25, 25));
-            Palette.setColor(QPalette::AlternateBase, QColor(53, 53, 53));
-            Palette.setColor(QPalette::ToolTipBase, QColor(53, 53, 53));
-            Palette.setColor(QPalette::ToolTipText, Qt::white);
-            Palette.setColor(QPalette::Text, Qt::white);
-            Palette.setColor(QPalette::Button, QColor(53, 53, 53));
-            Palette.setColor(QPalette::ButtonText, Qt::white);
-            Palette.setColor(QPalette::BrightText, Qt::red);
-            Palette.setColor(QPalette::Link, QColor(42, 130, 218));
-            Palette.setColor(QPalette::Highlight, QColor(42, 130, 218));
-            Palette.setColor(QPalette::HighlightedText, Qt::black);
-            Palette.setColor(QPalette::Disabled, QPalette::Text, QColor(164, 166, 168));
-            Palette.setColor(QPalette::Disabled, QPalette::WindowText, QColor(164, 166, 168));
-            Palette.setColor(QPalette::Disabled, QPalette::ButtonText, QColor(164, 166, 168));
-            Palette.setColor(QPalette::Disabled, QPalette::HighlightedText, QColor(164, 166, 168));
-            Palette.setColor(QPalette::Disabled, QPalette::Base, QColor(68, 68, 68));
-            Palette.setColor(QPalette::Disabled, QPalette::Window, QColor(68, 68, 68));
-            Palette.setColor(QPalette::Disabled, QPalette::Highlight, QColor(68, 68, 68));
-        } else
-            Palette = qApp->style()->standardPalette();
-        QToolTip::setPalette(Palette);
-        qApp->setPalette(Palette);
-    }
+    static Theme loadStyle();
+    static void setStyle(const Theme val);
+    static QVariant readSettings(const QString group, const QString key);
+    static void setAutoPalette(bool autoPalette);
+
+private:
+    static Settings *m_instance;
+    static AutoPalette *mAutoPalette;
+    QSettings *m_settingsObj = nullptr;
+    static bool m_autoPalette;
+
+
+    Settings() = delete;
+    // Construct a Settings object
+    Settings(Format format, const QString &name);
+    static void changePalette(Palette _palette);
+    static void callbackForSignal(bool b, Settings &s);
+    static void connectionCallback(Settings &s);
+
+signals:
+    void autoPaletteSignal(bool);
+
+
+private slots:
+    static void bool2PaletteHelper(bool b);
+
+};
+
+
+class AutoPalette : public QObject {
+    Q_OBJECT
+
+    QThread *mThread=nullptr;
+public:
+    bool m_autoPalette;
+    static constexpr auto  hSubKey{L"SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Themes\\Personalize"};
+    static constexpr auto valueName{L"AppsUseLightTheme"};
+
+    AutoPalette(QObject *parent=nullptr);
+    auto readIsLight(const std::wstring &strKeyName, const std::wstring &strValueName);
+    void isLightEvent(bool &value);
+    bool autoPalette() const;
+    void setAutoPalette(bool autoPalette);
+
+public slots:
+    void isLightEventLoop(const bool &event);
+
+signals:
+    void notifyPalette(bool);
+
 };
 
 #endif // SETTINGS_HPP
